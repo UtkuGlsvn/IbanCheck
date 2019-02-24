@@ -16,22 +16,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-
-import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     Button convert;
     EditText ibantxt;
     TextView txt;
-    static String myresponse="";
-    private static final String api_key="1495a04c7966388b7d8fc15b98667e1a";
-    private static  final String USER_AGENT = "API Client/1.0";
-   // private static String url = "https://api.bank.codes/iban/json";
-
-    String url = "https://www.googleapis.com/customsearch/v1?key=AIzaSyBmSXUzVZBKQv9FJkTpZXn0dObKgEQOIFU&cx=014099860786446192319:t5mr0xnusiy&q=AndroidDev&alt=json&searchType=image";
+    Ibanapi myapi = new Ibanapi();
     RequestQueue queue;
 
     @Override
@@ -74,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
    protected void response()
-   {
-       StringRequest strReq = new StringRequest(Request.Method.GET,
-               "https://api.bank.codes/iban/json/9fc53b3db09ca830488d19546a4fc2a1/BE68539007547034/", new Response.Listener<String>() {
+   {//"https://api.bank.codes/iban/json/9fc53b3db09ca830488d19546a4fc2a1/BE68539007547034/"
+       StringRequest strReq = new StringRequest(Request.Method.GET,myapi.myurl()
+               , new Response.Listener<String>() {
 
            @Override
            public void onResponse(String response) {
