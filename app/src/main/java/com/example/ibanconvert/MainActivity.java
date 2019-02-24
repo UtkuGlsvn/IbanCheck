@@ -1,5 +1,6 @@
 package com.example.ibanconvert;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,16 +18,23 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.ibanconvert.model.IbanObject;
+
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     Button convert;
     EditText ibantxt;
     TextView txt;
-    Ibanapi myapi = new Ibanapi();
     RequestQueue queue;
+    ProgressDialog pDialog;
+    IbanObject myobject=new IbanObject();
+    IbanApi myapi = new IbanApi();
 
+    private String jsonResponse = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
         convert=findViewById(R.id.convertbtn);
         ibantxt=findViewById(R.id.ibantext);
         txt=findViewById(R.id.resulttxt);
+
+        pDialog=new ProgressDialog(this);
+        pDialog.setMessage("Lütfen Bekleyin!");
+
 
         queue = Volley.newRequestQueue(this);
 
@@ -65,26 +78,62 @@ public class MainActivity extends AppCompatActivity {
         else return true;
     }
 
-   protected void response()
-   {//"https://api.bank.codes/iban/json/9fc53b3db09ca830488d19546a4fc2a1/BE68539007547034/"
-       StringRequest strReq = new StringRequest(Request.Method.GET,myapi.myurl()
-               , new Response.Listener<String>() {
 
-           @Override
-           public void onResponse(String response) {
-               Log.d("warning", response.toString());
-               txt.setText(response.toString());
+    private void response() {
 
-           }
-       }, new Response.ErrorListener() {
+    showDialog();
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET,
+                myapi.myurl(), null, new Response.Listener<JSONObject>() {
 
-           @Override
-           public void onErrorResponse(VolleyError error) {
-               VolleyLog.d("Error: " + error.getMessage());
-           }
-       });
+            @Override
+            public void onResponse(JSONObject response) {
+                Log.d("response",response.toString());
 
-      queue.add(strReq);
-   }
+                try {
+                    JSONObject result = response.getJSONObject("result");
+                    JSONObject data = result.getJSONObject("data");
+
+                    myobject.setIban(data.getString("iban"));
+                    myobject.setCountry(data.getString("country"));
+                    myobject.setCountrycode(data.getString("countrycode"));
+
+                    jsonResponse += "Iban No: " + myobject.getIban() + "\n";
+                    jsonResponse += "Ulke kod: " + myobject.getCountrycode()+ "\n";
+                    jsonResponse += "Ulke:: " + myobject.getCountry() + "\n";
+
+                    txt.setText(jsonResponse);
+                    hideDialog();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),
+                            "Error: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
+                    hideDialog();
+                }
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                VolleyLog.d("Error: " + error.getMessage());
+                Toast.makeText(getApplicationContext(),
+                        error.getMessage(), Toast.LENGTH_SHORT).show();
+                hideDialog();
+            }
+        });
+
+        // Adding request to request queue
+        queue.add(jsonObjReq);
+    }
+
+    private void showDialog() {
+        if (!pDialog.isShowing())
+            pDialog.show();
+    }
+
+    private void hideDialog() {
+        if (pDialog.isShowing())
+            pDialog.dismiss();
+    }
 
 }
