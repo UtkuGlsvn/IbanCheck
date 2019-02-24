@@ -7,9 +7,9 @@ import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,7 +19,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ibanconvert.model.IbanObject;
 
@@ -49,16 +48,20 @@ public class MainActivity extends AppCompatActivity {
 
         queue = Volley.newRequestQueue(this);
 
-        if(control())
-        {
-            try {
-                response();
-            } catch (Exception e) {
-                e.printStackTrace();
+        convert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(control())
+                {
+                    try {
+                        response();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
             }
-
-        }
-
+        });
 
 
     }
@@ -83,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
     showDialog();
         JsonObjectRequest jsonObjReq = new JsonObjectRequest(Request.Method.GET,
-                myapi.myurl(), null, new Response.Listener<JSONObject>() {
+                myapi.myurl(ibantxt.getText().toString()), null, new Response.Listener<JSONObject>() {
 
             @Override
             public void onResponse(JSONObject response) {
